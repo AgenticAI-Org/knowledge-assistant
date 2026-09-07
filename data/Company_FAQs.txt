@@ -1,0 +1,48 @@
+Company FAQs
+============
+
+General
+-------
+Q: Who do I contact for payroll questions?
+            A: Payroll queries should be directed to payroll@northwindretail.example or raised as a
+            ticket in the HR portal under the 'Payroll' category.
+
+            Q: How do I update my bank details?
+            A: Bank detail updates can be submitted through the HR portal under 'My Profile > Payment
+            Details'. Changes typically take effect from the next payroll cycle.
+
+            Q: Where do I find my payslip?
+            A: Payslips are published in the HR portal under 'My Profile > Payslips' from the first
+            working day of each month, and can be downloaded as a PDF.
+
+            Q: Who do I contact about my health insurance card?
+            A: Insurance card queries go to the HR benefits desk at benefits@northwindretail.example.
+            Replacement cards are typically issued within 10 working days.
+
+IT
+--
+Q: How do I get a new laptop?
+            A: Submit a hardware request ticket through the IT Service Portal. Standard laptop
+            refresh cycle is every 3 years, or earlier in case of hardware failure verified by IT.
+
+            Q: How do I request access to a shared drive?
+            A: Raise an access request ticket in the IT Service Portal naming the drive and the
+            business reason. Access requires approval from the data owner before IT can grant it.
+
+            Q: My laptop is running slowly. What should I do?
+            A: Restart the machine, confirm pending operating system updates are installed, and if
+            the problem persists log a support ticket with the IT Helpdesk describing when it started.
+
+Workplace
+---------
+Q: How do I book a meeting room?
+            A: Meeting rooms are booked through the calendar system by adding the room as a resource
+            to the meeting invitation. Rooms held but unused for 15 minutes are released automatically.
+
+            Q: What should I do if I lose my access badge?
+            A: Report a lost badge to the facilities desk immediately so it can be deactivated. A
+            replacement badge is issued within 2 working days.
+
+            Q: Can I bring a visitor into the office?
+            A: Visitors must be registered with the facilities desk at least 1 working day in advance
+            and must be accompanied by their host at all times inside the building.

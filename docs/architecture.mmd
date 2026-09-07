@@ -1,0 +1,27 @@
+flowchart TD
+    subgraph Ingestion["Ingestion Path (offline)"]
+        A[data/ *.pdf .docx .txt] --> B[Document Loaders]
+        B --> C[Chunker]
+        C --> D[OpenAI Embeddings]
+        D --> E[(ChromaDB)]
+        C --> F[(BM25 Index)]
+    end
+
+    subgraph Query["Query Path (per user turn)"]
+        U[User via Streamlit] --> Q[Query Condensation<br/>memory-aware]
+        Q --> V[Vector Search]
+        Q --> K[BM25 Search]
+        V --> H[Hybrid Merge - RRF]
+        K --> H
+        H --> R[Cross-Encoder Reranker]
+        R --> CTX[Top-k Final Context]
+        CTX --> G{Sufficient context?}
+        G -- no --> NF["'Not found' fallback"]
+        G -- yes --> L[LLM + Conversation Memory]
+        L --> ANS[Grounded Answer + Citations]
+        NF --> UI[Streamlit Chat UI]
+        ANS --> UI
+    end
+
+    E -.retrieves.-> V
+    F -.retrieves.-> K
