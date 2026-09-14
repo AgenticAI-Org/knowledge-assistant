@@ -1,0 +1,662 @@
+<title>Employee Knowledge Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --bg:#E7EBEE;
+  --surface:#FFFFFF;
+  --surface-2:#F3F6F8;
+  --ink:#131A20;
+  --ink-2:#56636E;
+  --ink-3:#84919C;
+  --line:#D2DAE0;
+  --line-2:#E3E9ED;
+  --vec:#4B50CE;
+  --kw:#B96D12;
+  --accent:#00836E;
+  --accent-soft:rgba(0,131,110,.09);
+  --vec-soft:rgba(75,80,206,.09);
+  --kw-soft:rgba(185,109,18,.10);
+  --track:#E6ECF0;
+  --shadow:0 1px 2px rgba(19,26,32,.05), 0 12px 30px rgba(19,26,32,.07);
+
+  --font-display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --font-body:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B0F13;
+    --surface:#151B21;
+    --surface-2:#1B232A;
+    --ink:#E8EDF1;
+    --ink-2:#9BA8B3;
+    --ink-3:#71808B;
+    --line:#2A343C;
+    --line-2:#222B32;
+    --vec:#7B82E8;
+    --kw:#BB8634;
+    --accent:#2CA78D;
+    --accent-soft:rgba(44,167,141,.13);
+    --vec-soft:rgba(123,130,232,.14);
+    --kw-soft:rgba(187,134,52,.15);
+    --track:#232C34;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 34px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B0F13;
+  --surface:#151B21;
+  --surface-2:#1B232A;
+  --ink:#E8EDF1;
+  --ink-2:#9BA8B3;
+  --ink-3:#71808B;
+  --line:#2A343C;
+  --line-2:#222B32;
+  --vec:#7B82E8;
+  --kw:#BB8634;
+  --accent:#2CA78D;
+  --accent-soft:rgba(44,167,141,.13);
+  --vec-soft:rgba(123,130,232,.14);
+  --kw-soft:rgba(187,134,52,.15);
+  --track:#232C34;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 34px rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-body);
+  min-height:100dvh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+}
+.deck{
+  width:min(100%, calc((100dvh - 132px) * 16 / 9), 1220px);
+  display:flex;
+  flex-direction:column;
+  gap:11px;
+}
+
+/* ---------- deck chrome ---------- */
+.bar{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.bar__name{font-family:var(--font-display);font-weight:600;font-size:14px;letter-spacing:-.01em}
+.bar__meta{font-family:var(--font-mono);font-size:11px;color:var(--ink-3);letter-spacing:.02em}
+.bar__count{margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.bar__count b{color:var(--ink);font-weight:500}
+
+.board{
+  container-type:inline-size;
+  aspect-ratio:16/9;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:4px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+
+.nav{display:flex;align-items:center;gap:8px}
+.nav__btn{
+  font:inherit;font-size:12px;font-family:var(--font-mono);
+  color:var(--ink-2);background:var(--surface);
+  border:1px solid var(--line);border-radius:3px;
+  padding:5px 11px;cursor:pointer;
+}
+.nav__btn:hover{color:var(--ink);border-color:var(--ink-3)}
+.dots{display:flex;gap:5px;margin:0 4px;padding:0;list-style:none}
+.dot{
+  width:26px;height:5px;padding:0;border:0;border-radius:2px;
+  background:var(--line);cursor:pointer;
+}
+.dot[aria-current="true"]{background:var(--accent)}
+.dot:hover{background:var(--ink-3)}
+.hint{margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--ink-3)}
+.hint kbd{font:inherit;border:1px solid var(--line);border-bottom-width:2px;border-radius:3px;padding:0 4px;color:var(--ink-2)}
+
+:where(button,[role="tab"]):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- slide shell ---------- */
+.slide{
+  width:100%;height:100%;
+  padding:3.3cqi 3.6cqi;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.slide[hidden]{display:none}
+.eyebrow{
+  margin:0;font-family:var(--font-mono);font-size:1.02cqi;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);
+}
+.stitle{
+  margin:.5cqi 0 0;font-family:var(--font-display);
+  font-size:3.5cqi;font-weight:600;line-height:1.06;letter-spacing:-.022em;
+  text-wrap:balance;
+}
+.shead{display:flex;align-items:flex-end;gap:2cqi;justify-content:space-between}
+.shead__note{font-family:var(--font-mono);font-size:1.05cqi;color:var(--ink-3);padding-bottom:.4cqi;white-space:nowrap}
+
+/* ---------- slide 1 ---------- */
+.cover{display:grid;grid-template-columns:1.06fr 1fr;gap:3.4cqi;align-items:center;flex:1}
+.cover__hero{
+  margin:1.2cqi 0 0;font-family:var(--font-display);
+  font-size:5.7cqi;font-weight:700;line-height:.98;letter-spacing:-.035em;
+}
+.cover__lead{
+  margin:1.8cqi 0 0;font-size:1.5cqi;line-height:1.55;color:var(--ink-2);max-width:34ch;
+}
+.chips{display:flex;flex-wrap:wrap;gap:.7cqi;margin:2.2cqi 0 0;padding:0;list-style:none}
+.chip{
+  font-family:var(--font-mono);font-size:1.02cqi;letter-spacing:.02em;
+  border:1px solid var(--line);border-radius:2px;padding:.5cqi .8cqi;color:var(--ink-2);
+}
+.cover__spec{
+  margin:2.2cqi 0 0;padding-top:1.4cqi;border-top:1px solid var(--line-2);
+  font-family:var(--font-mono);font-size:1.02cqi;color:var(--ink-3);line-height:1.8;
+}
+.shot{margin:0}
+.shot img{display:block;width:100%;border:1px solid var(--line);border-radius:3px}
+.shot figcaption{
+  margin-top:.9cqi;font-family:var(--font-mono);font-size:.98cqi;color:var(--ink-3);
+}
+
+/* ---------- slide 2 ---------- */
+.compare{margin-top:2.4cqi;display:flex;flex-direction:column;gap:0;flex:1}
+.compare__head{
+  display:grid;grid-template-columns:1fr 1fr;gap:3cqi;
+  padding-bottom:.9cqi;border-bottom:1px solid var(--line);
+}
+.compare__head span{font-family:var(--font-mono);font-size:1.02cqi;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.compare__head span:last-child{color:var(--accent)}
+.row{
+  display:grid;grid-template-columns:1fr 1fr;gap:3cqi;align-items:center;
+  flex:1;padding:1.5cqi 0;border-bottom:1px solid var(--line-2);
+}
+.row p{margin:0;font-size:1.33cqi;line-height:1.5;color:var(--ink-2)}
+.row p strong{color:var(--ink);font-weight:600}
+.row p:last-child strong{color:var(--accent)}
+.stack{
+  padding-top:1.8cqi;
+  display:flex;flex-wrap:wrap;gap:.4cqi 1.6cqi;
+  font-family:var(--font-mono);font-size:1.02cqi;color:var(--ink-3);
+}
+.stack b{font-weight:400;color:var(--ink-2)}
+
+/* ---------- slide 3 ---------- */
+.pipe{
+  margin-top:2cqi;
+  display:grid;
+  grid-template-columns:1fr auto 1.08fr auto 1fr auto 1fr auto 1.12fr;
+  align-items:stretch;gap:.7cqi;
+}
+.arrow{align-self:center;color:var(--ink-3);font-size:1.3cqi;line-height:1}
+.arm{display:flex;flex-direction:column;gap:.5cqi}
+.stage{
+  font:inherit;text-align:left;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:.85cqi .9cqi;display:flex;flex-direction:column;gap:.25cqi;
+  height:100%;transition:border-color .12s, background-color .12s;
+}
+.stage:hover{border-color:var(--ink-3)}
+.stage__k{font-family:var(--font-mono);font-size:.92cqi;letter-spacing:.08em;color:var(--ink-3)}
+.stage__n{font-size:1.24cqi;font-weight:600;line-height:1.2;letter-spacing:-.01em}
+.stage[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.stage[aria-pressed="true"] .stage__k{color:var(--accent)}
+.stage[data-hue="vec"][aria-pressed="true"]{background:var(--vec-soft);border-color:var(--vec)}
+.stage[data-hue="vec"][aria-pressed="true"] .stage__k{color:var(--vec)}
+.stage[data-hue="kw"][aria-pressed="true"]{background:var(--kw-soft);border-color:var(--kw)}
+.stage[data-hue="kw"][aria-pressed="true"] .stage__k{color:var(--kw)}
+
+.detail{
+  margin-top:1.8cqi;padding:1.6cqi 1.8cqi;
+  background:var(--surface-2);border:1px solid var(--line-2);border-radius:3px;
+  display:grid;grid-template-columns:1.75fr 1fr;gap:2.4cqi;
+  flex:1;min-height:13.4cqi;align-content:start;
+}
+.detail__name{margin:0;font-family:var(--font-display);font-size:1.9cqi;font-weight:600;letter-spacing:-.015em}
+.detail__body{margin:.7cqi 0 0;font-size:1.28cqi;line-height:1.52;color:var(--ink-2)}
+.detail__meta{display:flex;flex-direction:column;gap:.55cqi;align-content:start}
+.mrow{display:flex;justify-content:space-between;gap:1cqi;font-family:var(--font-mono);font-size:1.02cqi;border-bottom:1px dotted var(--line);padding-bottom:.45cqi}
+.mrow span:first-child{color:var(--ink-3)}
+.mrow span:last-child{color:var(--ink);font-variant-numeric:tabular-nums;text-align:right}
+
+.lat{padding-top:1.8cqi}
+.lat__head{display:flex;justify-content:space-between;align-items:baseline;gap:1cqi}
+.lat__title{font-family:var(--font-mono);font-size:1.02cqi;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.lat__total{font-family:var(--font-mono);font-size:1.02cqi;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.lat__bar{margin-top:.8cqi;display:grid;grid-template-columns:298fr 170fr 1051fr;gap:2px}
+.seg{display:flex;flex-direction:column;gap:.55cqi;background:none;border:0;padding:0;font:inherit;text-align:left;cursor:default}
+.seg__fill{height:1.5cqi;border-radius:2px;background:var(--h);transition:opacity .15s}
+.seg__label{display:flex;align-items:center;gap:.45cqi;font-family:var(--font-mono);font-size:.98cqi;color:var(--ink-2);white-space:nowrap;overflow:hidden}
+.seg__label i{width:.62cqi;height:.62cqi;border-radius:1px;background:var(--h);flex:none}
+.seg__label b{font-weight:400;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.lat__bar[data-focus] .seg:not([data-on]) .seg__fill{opacity:.42}
+.lat__note{margin:.9cqi 0 0;font-family:var(--font-mono);font-size:.95cqi;color:var(--ink-3);line-height:1.5}
+
+/* ---------- slide 4 ---------- */
+.tabs{display:flex;gap:.5cqi;margin-top:1.8cqi;border-bottom:1px solid var(--line)}
+.tab{
+  font:inherit;font-size:1.2cqi;font-weight:500;cursor:pointer;
+  background:none;border:0;border-bottom:2px solid transparent;
+  padding:.7cqi 1.2cqi;margin-bottom:-1px;color:var(--ink-3);
+}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.tab em{font-style:normal;font-family:var(--font-mono);font-size:.92cqi;margin-right:.5cqi;opacity:.75}
+.frame{
+  margin-top:1.6cqi;flex:1;min-height:0;
+  background:var(--surface-2);border:1px solid var(--line-2);border-radius:3px;
+  display:flex;align-items:center;justify-content:center;padding:1.2cqi;
+}
+.frame img{max-width:100%;max-height:100%;width:auto;height:auto;display:block;border-radius:2px}
+.caption{
+  margin:1.3cqi 0 0;font-size:1.26cqi;line-height:1.5;color:var(--ink-2);max-width:88ch;
+}
+.caption b{color:var(--ink);font-weight:600}
+
+/* ---------- slide 5 ---------- */
+.evid{display:grid;grid-template-columns:1.42fr 1fr;gap:2.8cqi;margin-top:2cqi;flex:1;align-items:stretch}
+.evid__col{display:flex;flex-direction:column}
+.sub{font-family:var(--font-mono);font-size:1.02cqi;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin:0 0 1cqi}
+table{width:100%;border-collapse:collapse;font-size:1.14cqi}
+thead th{
+  font-family:var(--font-mono);font-size:.95cqi;font-weight:400;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-3);text-align:right;
+  padding:0 0 .6cqi;border-bottom:1px solid var(--line);
+}
+thead th:first-child{text-align:left}
+tbody td{padding:1.3cqi 0;border-bottom:1px solid var(--line-2);vertical-align:middle;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink-2)}
+tbody td:first-child{text-align:left;color:var(--ink)}
+tbody tr[data-best] td{color:var(--ink);font-weight:600}
+.meth{display:flex;align-items:center;gap:.6cqi}
+.meth i{width:.66cqi;height:.66cqi;border-radius:1px;background:var(--h);flex:none}
+.bar-cell{width:34%;padding-left:1.4cqi}
+.track{background:var(--track);border-radius:2px;height:.85cqi;width:100%}
+.track span{display:block;height:100%;border-radius:2px;background:var(--h)}
+.scale{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.9cqi;color:var(--ink-3);margin-top:.5cqi;width:34%;margin-left:auto;padding-left:1.4cqi}
+.tnote{margin:1.1cqi 0 0;font-size:1.06cqi;line-height:1.5;color:var(--ink-3)}
+
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:.6cqi;flex:1;grid-auto-rows:1fr}
+.tile{padding:1cqi 1.1cqi;background:var(--surface-2);border:1px solid var(--line-2);border-radius:3px}
+.tile--wide{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:1cqi;background:var(--accent-soft);border-color:var(--accent)}
+.tile__v{font-family:var(--font-display);font-size:2.2cqi;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+.tile__k{margin-top:.5cqi;font-family:var(--font-mono);font-size:.95cqi;color:var(--ink-3);line-height:1.4}
+.tile--wide .tile__v{color:var(--accent)}
+.tile--wide .tile__k{margin:0;text-align:right}
+
+.caveats{
+  margin-top:2cqi;padding-top:1.6cqi;border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(3,1fr);gap:2.2cqi;
+}
+.caveat h4{margin:0;font-family:var(--font-mono);font-size:.98cqi;letter-spacing:.05em;color:var(--ink)}
+.caveat p{margin:.5cqi 0 0;font-size:1.06cqi;line-height:1.5;color:var(--ink-3)}
+code{font-family:var(--font-mono);font-size:.92em;color:var(--ink-2)}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+
+<div class="deck">
+  <header class="bar">
+    <span class="bar__name">Employee Knowledge Assistant</span>
+    <span class="bar__meta">IIT Patna USDC GenAI · Capstone Project 2</span>
+    <span class="bar__count"><b id="cur">1</b> / 5</span>
+  </header>
+
+  <div class="board">
+
+    <!-- ============ 1 ============ -->
+    <section class="slide" data-slide>
+      <div class="cover">
+        <div>
+          <p class="eyebrow">Enterprise knowledge assistant · Advanced RAG</p>
+          <h1 class="cover__hero">Employee<br>Knowledge<br>Assistant</h1>
+          <p class="cover__lead">Answers policy questions from the company's own documents — retrieving twice, reranking locally, citing the passages it actually used, and refusing when the corpus has no answer.</p>
+          <ul class="chips">
+            <li class="chip">Hybrid retrieval</li>
+            <li class="chip">Conversational memory</li>
+            <li class="chip">Grounded or refused</li>
+          </ul>
+          <p class="cover__spec">7 policy documents · 57 chunks · PDF / DOCX / TXT<br>18 curated eval questions · answerable, unanswerable, multi-turn</p>
+        </div>
+        <figure class="shot">
+          <img src="img/app-full.png" alt="The Streamlit app answering a VPN password question, with a Sources panel citing IT_Policy.docx.">
+          <figcaption>app/streamlit_app.py · localhost:8501</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="slide" data-slide hidden>
+      <p class="eyebrow">The gap</p>
+      <h2 class="stitle">Why "chat with your PDF" isn't enough</h2>
+      <div class="compare">
+        <div class="compare__head"><span>Where the baseline breaks</span><span>What this does instead</span></div>
+        <div class="row">
+          <p><strong>One retrieval pass.</strong> Pure vector search paraphrases well but blurs exact terms — a form code, a filename, a policy named verbatim.</p>
+          <p><strong>Two passes, fused.</strong> Vector and BM25 run on every query, merge by Reciprocal Rank Fusion, then get reranked by a local cross-encoder.</p>
+        </div>
+        <div class="row">
+          <p><strong>No memory.</strong> "What about carry-forward?" retrieves noise, because nothing in that string says <em>leave</em>.</p>
+          <p><strong>Condense, then retrieve.</strong> Each follow-up is rewritten into a standalone query against recent turns before retrieval runs.</p>
+        </div>
+        <div class="row">
+          <p><strong>Fills gaps by inventing.</strong> Asked about a sabbatical policy that doesn't exist, it writes one — and names sources it never read.</p>
+          <p><strong>Refuses, and cites what it read.</strong> A two-stage guardrail declines on weak context; citations come from the chunks in the prompt.</p>
+        </div>
+        <div class="stack">
+          <span>LLM <b>gpt-4o-mini</b></span>
+          <span>Embeddings <b>text-embedding-3-small</b></span>
+          <span>Vector <b>ChromaDB</b></span>
+          <span>Keyword <b>rank_bm25</b></span>
+          <span>Reranker <b>ms-marco-MiniLM-L-6-v2</b></span>
+          <span>Memory <b>LangChain</b></span>
+          <span>UI <b>Streamlit</b></span>
+          <span>Packaging <b>uv</b></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="slide" data-slide hidden>
+      <div class="shead">
+        <div>
+          <p class="eyebrow">Query path · one user turn</p>
+          <h2 class="stitle">Six stages between question and answer</h2>
+        </div>
+        <span class="shead__note">Select a stage →</span>
+      </div>
+
+      <div class="pipe">
+        <button class="stage" data-stage="condense" aria-pressed="false"><span class="stage__k">01</span><span class="stage__n">Condense</span></button>
+        <span class="arrow" aria-hidden="true">→</span>
+        <div class="arm">
+          <button class="stage" data-stage="vector" data-hue="vec" aria-pressed="false"><span class="stage__k">02a</span><span class="stage__n">Vector search</span></button>
+          <button class="stage" data-stage="bm25" data-hue="kw" aria-pressed="false"><span class="stage__k">02b</span><span class="stage__n">BM25 search</span></button>
+        </div>
+        <span class="arrow" aria-hidden="true">→</span>
+        <button class="stage" data-stage="fuse" aria-pressed="true"><span class="stage__k">03</span><span class="stage__n">Fuse — RRF</span></button>
+        <span class="arrow" aria-hidden="true">→</span>
+        <button class="stage" data-stage="rerank" aria-pressed="false"><span class="stage__k">04</span><span class="stage__n">Rerank</span></button>
+        <span class="arrow" aria-hidden="true">→</span>
+        <button class="stage" data-stage="generate" aria-pressed="false"><span class="stage__k">05</span><span class="stage__n">Guard &amp; generate</span></button>
+      </div>
+
+      <div class="detail">
+        <div>
+          <h3 class="detail__name" id="dName">Reciprocal Rank Fusion</h3>
+          <p class="detail__body" id="dBody">Merges the two ranked lists by rank position rather than by score. Cosine similarity and BM25 weights live on incomparable scales, so blending them numerically would mean inventing a normalization — RRF sidesteps the question entirely.</p>
+        </div>
+        <div class="detail__meta" id="dMeta"></div>
+      </div>
+
+      <div class="lat">
+        <div class="lat__head">
+          <span class="lat__title">Where a median turn spends its time</span>
+          <span class="lat__total">1,519 ms total · p50 over 20 logged queries</span>
+        </div>
+        <div class="lat__bar" id="latBar" data-focus>
+          <div class="seg" data-seg="retrieval" style="--h:var(--vec)" title="Retrieval — p50 298 ms, p95 624 ms">
+            <div class="seg__fill"></div>
+            <span class="seg__label"><i></i>Retrieval <b>298 ms</b></span>
+          </div>
+          <div class="seg" data-seg="rerank" style="--h:var(--kw)" title="Cross-encoder rerank — p50 170 ms, p95 235 ms">
+            <div class="seg__fill"></div>
+            <span class="seg__label"><i></i>Rerank <b>170 ms</b></span>
+          </div>
+          <div class="seg" data-seg="generation" data-on style="--h:var(--accent)" title="Generation — p50 1051 ms, p95 1374 ms">
+            <div class="seg__fill"></div>
+            <span class="seg__label"><i></i>Generation <b>1,051 ms</b></span>
+          </div>
+        </div>
+        <p class="lat__note">Condensation contributes 0 ms at the median because it only runs on follow-up turns — its p95 is 783 ms. Measured from <code>logs/app.log</code>.</p>
+      </div>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="slide" data-slide hidden>
+      <div class="shead">
+        <div>
+          <p class="eyebrow">Captured from the running app</p>
+          <h2 class="stitle">Three turns, one session</h2>
+        </div>
+        <span class="shead__note">localhost:8501</span>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Session turns">
+        <button class="tab" role="tab" aria-selected="true" data-tab="grounded"><em>01</em>Grounded answer</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="memory"><em>02</em>Follow-up memory</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="refusal"><em>03</em>Honest refusal</button>
+      </div>
+
+      <div class="frame">
+        <img id="shot" src="img/chat-grounded.png" alt="The assistant answering how to reset a VPN password, with a Sources panel naming IT_Policy.docx.">
+      </div>
+      <p class="caption" id="shotCap"><b>"How do I reset my VPN password?"</b> — answered from <code>IT_Policy.docx</code> in 2,084 ms. The Sources panel names the document and how many excerpts reached the prompt, because citations are built from the retrieved chunks rather than parsed out of the model's reply.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="slide" data-slide hidden>
+      <p class="eyebrow">Evaluation · eval/report.md</p>
+      <h2 class="stitle">What the numbers say — and what they don't</h2>
+
+      <div class="evid">
+        <div class="evid__col">
+          <p class="sub">Retrieval · 13 questions, k = 4</p>
+          <table>
+            <thead>
+              <tr><th>Method</th><th>Passage hit@4</th><th>Passage MRR@4</th><th class="bar-cell"></th></tr>
+            </thead>
+            <tbody>
+              <tr style="--h:var(--vec)">
+                <td><span class="meth"><i></i>Vector only</span></td><td>1.00</td><td>0.88</td>
+                <td class="bar-cell"><div class="track"><span style="width:88%"></span></div></td>
+              </tr>
+              <tr style="--h:var(--kw)">
+                <td><span class="meth"><i></i>BM25 only</span></td><td>0.85</td><td>0.81</td>
+                <td class="bar-cell"><div class="track"><span style="width:81%"></span></div></td>
+              </tr>
+              <tr style="--h:var(--accent)" data-best>
+                <td><span class="meth"><i></i>Hybrid + reranked</span></td><td>1.00</td><td>0.92</td>
+                <td class="bar-cell"><div class="track"><span style="width:92%"></span></div></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="scale"><span>MRR 0</span><span>1.0</span></div>
+          <p class="tnote">Document-level hit rate is 1.00 for all three arms — across seven documents it saturates. Passage-level, out of 57 chunks, is the metric with room to separate them.</p>
+        </div>
+
+        <div class="evid__col">
+          <p class="sub">Generation · 16 questions</p>
+          <div class="tiles">
+            <div class="tile"><div class="tile__v">1.00</div><div class="tile__k">Faithfulness<br>LLM-judge</div></div>
+            <div class="tile"><div class="tile__v">1.00</div><div class="tile__k">Answer relevancy<br>LLM-judge</div></div>
+            <div class="tile"><div class="tile__v">1.00</div><div class="tile__k">Citation coverage<br>expected source cited</div></div>
+            <div class="tile"><div class="tile__v">1.00</div><div class="tile__k">Refusal accuracy<br>3 unanswerable</div></div>
+            <div class="tile tile--wide"><div class="tile__v">1.00</div><div class="tile__k">Multi-turn memory<br>2 conversations</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="caveats">
+        <div class="caveat">
+          <h4>The judge is itself an LLM</h4>
+          <p>Faithfulness and relevancy come from <code>eval/run_generation_eval.py</code>. Read them as directional signal, not ground truth.</p>
+        </div>
+        <div class="caveat">
+          <h4>The corpus is small</h4>
+          <p>57 chunks and 16 questions. Perfect scores at this size would not survive a real enterprise document set.</p>
+        </div>
+        <div class="caveat">
+          <h4>Known costs</h4>
+          <p>Condensation adds a round-trip per follow-up, the CPU reranker is the slowest stage, and <code>build_index()</code> has no incremental path.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <nav class="nav">
+    <button class="nav__btn" id="prev" aria-label="Previous slide">← Prev</button>
+    <ol class="dots" id="dots"></ol>
+    <button class="nav__btn" id="next" aria-label="Next slide">Next →</button>
+    <span class="hint"><kbd>←</kbd> <kbd>→</kbd> to move · <kbd>1</kbd>–<kbd>5</kbd> to jump</span>
+  </nav>
+</div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('[data-slide]'));
+  var cur = document.getElementById('cur');
+  var dots = document.getElementById('dots');
+  var i = 0;
+
+  slides.forEach(function (s, k) {
+    var li = document.createElement('li');
+    var b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Slide ' + (k + 1));
+    b.setAttribute('aria-current', k === 0 ? 'true' : 'false');
+    b.addEventListener('click', function () { go(k); });
+    li.appendChild(b);
+    dots.appendChild(li);
+  });
+  var dotEls = Array.prototype.slice.call(dots.querySelectorAll('.dot'));
+
+  function go(n) {
+    i = (n + slides.length) % slides.length;
+    slides.forEach(function (s, k) { s.hidden = k !== i; });
+    dotEls.forEach(function (d, k) { d.setAttribute('aria-current', k === i ? 'true' : 'false'); });
+    cur.textContent = i + 1;
+  }
+
+  document.getElementById('prev').addEventListener('click', function () { go(i - 1); });
+  document.getElementById('next').addEventListener('click', function () { go(i + 1); });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'PageDown' || k === ' ') { go(i + 1); e.preventDefault(); }
+    else if (k === 'ArrowLeft' || k === 'PageUp') { go(i - 1); e.preventDefault(); }
+    else if (k === 'Home') { go(0); e.preventDefault(); }
+    else if (k === 'End') { go(slides.length - 1); e.preventDefault(); }
+    else if (k >= '1' && k <= '5') { go(parseInt(k, 10) - 1); e.preventDefault(); }
+  });
+
+  /* ---- slide 3: stage explorer ---- */
+  var STAGES = {
+    condense: {
+      name: 'Memory-aware query condensation',
+      body: 'Rewrites a follow-up into a standalone question using recent turns, so "what about carry-forward?" becomes something retrieval can actually match. It costs one extra LLM round-trip — paid only on follow-up turns, which is why its median is zero.',
+      meta: [['module', 'src/memory/conversation.py'], ['p50 / p95', '0 / 783 ms'], ['runs on', 'follow-up turns']],
+      seg: null
+    },
+    vector: {
+      name: 'Vector search',
+      body: 'Semantic recall over a persisted ChromaDB collection: finds the passage that means the same thing in different words. Chunk metadata — source filename, page, chunk index — rides along, and is what the citations are later built from.',
+      meta: [['module', 'src/retrieval/vector_retriever.py'], ['embeddings', 'text-embedding-3-small'], ['candidates', 'top 10']],
+      seg: 'retrieval'
+    },
+    bm25: {
+      name: 'BM25 keyword search',
+      body: 'Lexical recall over the same chunk set. This is the arm that catches exact policy terms, form codes and filenames that embeddings smooth away — the questions where vector-only retrieval quietly returns something adjacent instead of something correct.',
+      meta: [['module', 'src/retrieval/bm25_retriever.py'], ['library', 'rank_bm25'], ['candidates', 'top 10']],
+      seg: 'retrieval'
+    },
+    fuse: {
+      name: 'Reciprocal Rank Fusion',
+      body: 'Merges the two ranked lists by rank position rather than by score. Cosine similarity and BM25 weights live on incomparable scales, so blending them numerically would mean inventing a normalization — RRF sidesteps the question entirely.',
+      meta: [['module', 'src/retrieval/hybrid.py'], ['input', '10 + 10 candidates'], ['fuses on', 'rank, not score']],
+      seg: 'retrieval'
+    },
+    rerank: {
+      name: 'Cross-encoder rerank',
+      body: 'Scores each surviving candidate against the query jointly, instead of comparing two independently-built vectors. It runs locally on CPU — no second paid API, at the cost of being the slowest stage per unit of work.',
+      meta: [['module', 'src/retrieval/reranker.py'], ['model', 'ms-marco-MiniLM-L-6-v2'], ['narrows', '20 → 4 chunks'], ['p50 / p95', '170 / 235 ms']],
+      seg: 'rerank'
+    },
+    generate: {
+      name: 'Guard, then generate',
+      body: 'A pre-generation score floor skips the LLM entirely when the top reranked chunk is too weak; a post-generation check catches the model declining on its own. Citations are taken from the chunks placed in the prompt, never parsed from the answer — so they cannot be hallucinated.',
+      meta: [['modules', 'src/guardrails/ · src/generation/'], ['model', 'gpt-4o-mini'], ['context', 'top 4 chunks'], ['p50 / p95', '1051 / 1374 ms']],
+      seg: 'generation'
+    }
+  };
+
+  var dName = document.getElementById('dName');
+  var dBody = document.getElementById('dBody');
+  var dMeta = document.getElementById('dMeta');
+  var latBar = document.getElementById('latBar');
+  var segs = Array.prototype.slice.call(latBar.querySelectorAll('.seg'));
+  var stageBtns = Array.prototype.slice.call(document.querySelectorAll('.stage'));
+
+  function paintMeta(rows) {
+    dMeta.textContent = '';
+    rows.forEach(function (r) {
+      var d = document.createElement('div');
+      d.className = 'mrow';
+      var a = document.createElement('span'); a.textContent = r[0];
+      var b = document.createElement('span'); b.textContent = r[1];
+      d.appendChild(a); d.appendChild(b);
+      dMeta.appendChild(d);
+    });
+  }
+
+  function pick(id) {
+    var s = STAGES[id];
+    if (!s) return;
+    dName.textContent = s.name;
+    dBody.textContent = s.body;
+    paintMeta(s.meta);
+    stageBtns.forEach(function (b) {
+      b.setAttribute('aria-pressed', b.dataset.stage === id ? 'true' : 'false');
+    });
+    segs.forEach(function (seg) {
+      if (s.seg && seg.dataset.seg === s.seg) seg.setAttribute('data-on', '');
+      else seg.removeAttribute('data-on');
+    });
+    if (s.seg) latBar.setAttribute('data-focus', '');
+    else latBar.removeAttribute('data-focus');
+  }
+
+  stageBtns.forEach(function (b) {
+    b.addEventListener('click', function () { pick(b.dataset.stage); });
+  });
+  pick('fuse');
+
+  /* ---- slide 4: session tabs ---- */
+  var SHOTS = {
+    grounded: {
+      src: 'img/chat-grounded.png',
+      alt: 'The assistant answering how to reset a VPN password, with a Sources panel naming IT_Policy.docx.',
+      cap: '<b>"How do I reset my VPN password?"</b> — answered from <code>IT_Policy.docx</code> in 2,084 ms. The Sources panel names the document and how many excerpts reached the prompt, because citations are built from the retrieved chunks rather than parsed out of the model\'s reply.'
+    },
+    memory: {
+      src: 'img/chat-memory.png',
+      alt: 'A follow-up question answered correctly, citing two documents.',
+      cap: '<b>"What if the automated reset fails?"</b> — the question has no subject of its own. Condensation resolves it against the previous turn before retrieval runs, and the answer now draws on two documents: <code>IT_Policy.docx</code> and <code>Company_FAQs.txt</code>.'
+    },
+    refusal: {
+      src: 'img/chat-refusal.png',
+      alt: 'The assistant declining to answer a question about a sabbatical policy.',
+      cap: '<b>"Does the company offer a sabbatical leave program?"</b> — no such policy exists in the corpus. The guardrail stops on insufficient context, so the LLM is never given the chance to invent one. No sources are shown, because none were used.'
+    }
+  };
+  var shot = document.getElementById('shot');
+  var shotCap = document.getElementById('shotCap');
+  Array.prototype.slice.call(document.querySelectorAll('.tab')).forEach(function (t) {
+    t.addEventListener('click', function () {
+      var s = SHOTS[t.dataset.tab];
+      document.querySelectorAll('.tab').forEach(function (o) { o.setAttribute('aria-selected', String(o === t)); });
+      shot.src = s.src;
+      shot.alt = s.alt;
+      shotCap.innerHTML = s.cap;
+    });
+  });
+})();
+</script>
